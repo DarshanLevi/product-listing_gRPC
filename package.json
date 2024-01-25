@@ -1,0 +1,17 @@
+{
+  "name": "product-listing_grpc",
+  "version": "1.0.0",
+  "description": "A Node.js gRPC project for product listing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.9.14",
+    "@grpc/proto-loader": "^0.7.10",
+    "mongoose": "^8.1.1"
+  }
+}
