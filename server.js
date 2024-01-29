@@ -1,6 +1,7 @@
 const grpc = require('@grpc/grpc-js');
-const { loadPackageDefinition } = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
+const connectDB = require('./db');
+const Product = require('./productModel');
 
 const packageDefinition = protoLoader.loadSync('product.proto', {
   keepCase: true,
@@ -9,47 +10,64 @@ const packageDefinition = protoLoader.loadSync('product.proto', {
   defaults: true,
   oneofs: true,
 });
-
 const { ProductService } = grpc.loadPackageDefinition(packageDefinition);
 
-// In-memory data store for simplicity
-const products = [];
-
-// Function to generate unique IDs
 const generateUniqueId = () => Date.now().toString();
-
 const server = new grpc.Server();
 
 server.addService(ProductService.service, {
-  GetAllProducts: (_, callback) => {
-    // Return all products
-    callback(null, { products });
+  GetAllProducts: async (_, callback) => {
+    try {
+      const products = await Product.find({});
+      callback(null, { products });
+    } catch (error) {
+      callback({
+        code: grpc.status.INTERNAL,
+        details: 'Internal Server Error',
+      });
+    }
   },
-  AddProduct: (product, callback) => {
-    // Add a product to the data store
-    const newProduct = {
-      id: generateUniqueId(),
-      name: product.name,
-      description: product.description,
-      price: product.price,
-    };
-    products.push(newProduct);
-    // Return the added product
-    callback(null, newProduct);
+
+  CreateProduct: async (call, callback) => {
+    try {
+      const newProduct = new Product({
+        id: generateUniqueId(),
+        name: call.request.name,
+        description: call.request.description,
+        price: call.request.price,
+      });
+
+      const savedProduct = await newProduct.save();
+      callback(null, savedProduct);
+    } catch (error) {
+      callback({
+        code: grpc.status.INTERNAL,
+        details: 'Internal Server Error',
+      });
+    }
   },
-  CreateProduct: (request, callback) => {
-    // Create a product in the data store
-    const newProduct = {
-      id: generateUniqueId(),
-      name: request.name,
-      description: request.description,
-      price: request.price,
-    };
-    products.push(newProduct);
-    // Return the created product
-    callback(null, newProduct);
+
+  GetProductById: async (call, callback) => {
+    try {
+      const product = await Product.findById(call.request.id);
+      if (product) {
+        callback(null, product);
+      } else {
+        callback({
+          code: grpc.status.NOT_FOUND,
+          details: 'Product not found',
+        });
+      }
+    } catch (error) {
+      callback({
+        code: grpc.status.INTERNAL,
+        details: 'Internal Server Error',
+      });
+    }
   },
 });
+
+connectDB();
 
 const PORT = 50051;
 server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), (err, port) => {

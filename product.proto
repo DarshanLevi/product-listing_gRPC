@@ -2,13 +2,8 @@ syntax = "proto3";
 
 service ProductService {
   rpc GetAllProducts (Empty) returns (ProductList);
-  rpc GetProduct (GetProductRequest) returns (Product);
-  rpc AddProduct (Product) returns (Product);
+  rpc GetProductById (GetProductByIdRequest) returns (Product);
   rpc CreateProduct (CreateProductRequest) returns (Product);
-}
-
-message GetProductRequest {
-  string id = 1;
 }
 
 message CreateProductRequest {
@@ -26,6 +21,10 @@ message Product {
 
 message ProductList {
   repeated Product products = 1;
+}
+
+message GetProductByIdRequest {
+  string id = 1;
 }
 
 message Empty {}

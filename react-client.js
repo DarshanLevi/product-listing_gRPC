@@ -1,5 +1,6 @@
+// react-client.js
+
 const grpc = require('@grpc/grpc-js');
-const { loadPackageDefinition } = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 
 const packageDefinition = protoLoader.loadSync('product.proto', {
@@ -23,14 +24,14 @@ client.GetAllProducts({}, (error, response) => {
   }
 });
 
-// Add Product
+// Create Product
 const newProduct = {
-  name: 'New Product',
-  description: 'Description of the new product',
-  price: 19.99,
+  name: 'New ',
+  description: ' new product',
+  price: 5000,
 };
 
-client.AddProduct(newProduct, (error, response) => {
+client.CreateProduct(newProduct, (error, response) => {
   if (!error) {
     console.log('Added Product:', response);
   } else {
